@@ -10,4 +10,4 @@ const nextConfig = {
   assetPrefix: isProd ? '/dalat2026' : '',
 };
 
-export default nextConfig;
+module.exports = nextConfig;
