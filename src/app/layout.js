@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import "./globals.css";
 
 export const metadata = {
@@ -10,8 +11,8 @@ export default function RootLayout({ children }) {
     <html lang="vi">
       <body>
         <nav style={{ padding: '20px', display: 'flex', justifyContent: 'center', gap: '30px', position: 'sticky', top: '0', zIndex: '100' }} className="glass">
-          <a href="/" style={{ fontWeight: '700', color: 'var(--primary)', fontSize: '1.2rem' }}>🌿 Homestay Voter</a>
-          <a href="/admin" style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Admin Panel</a>
+          <Link href="/" style={{ fontWeight: '700', color: 'var(--primary)', fontSize: '1.2rem' }}>🌿 Homestay Voter</Link>
+          <Link href="/admin" style={{ color: 'var(--text-muted)', fontWeight: '500' }}>Admin Panel</Link>
         </nav>
         {children}
         <footer style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
