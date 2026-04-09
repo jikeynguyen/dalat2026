@@ -12,8 +12,10 @@ export default function Admin() {
   const cloudName = "eggoeggoeggoeggo"; 
   const uploadPreset = "dalat2026"; 
   const [isUploading, setIsUploading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
+
     fetchHomestays();
   }, []);
 
@@ -25,29 +27,64 @@ export default function Admin() {
   const handleAddFromJson = async () => {
     try {
       const parsed = JSON.parse(jsonInput);
-      const itemsToAdd = Array.isArray(parsed) ? parsed : [parsed];
       
-      const newItems = itemsToAdd.map(item => ({
-        ...item,
-        images: uploadedImages.length > 0 ? uploadedImages : (item.images || (item.image ? [item.image] : [])),
-        votes: item.votes || 0
-      }));
+      if (editingId) {
+        // Handling Update
+        const updateData = {
+          ...parsed,
+          images: uploadedImages.length > 0 ? uploadedImages : (parsed.images || (parsed.image ? [parsed.image] : []))
+        };
 
-      const { error } = await supabase.from('homestays').insert(newItems);
-      
-      if (!error) {
-        fetchHomestays();
-        setJsonInput("");
-        setUploadedImages([]);
-        setStatus("✅ Đã thêm " + newItems.length + " homestay thành công!");
-        setTimeout(() => setStatus(""), 3000);
+        const { error } = await supabase.from('homestays').update(updateData).eq('id', editingId);
+        
+        if (!error) {
+          fetchHomestays();
+          resetForm();
+          setStatus("✅ Đã cập nhật homestay thành công!");
+          setTimeout(() => setStatus(""), 3000);
+        } else {
+          setStatus("❌ Lỗi Supabase: " + error.message);
+        }
       } else {
-        setStatus("❌ Lỗi Supabase: " + error.message);
+        // Handling Insert
+        const itemsToAdd = Array.isArray(parsed) ? parsed : [parsed];
+        const newItems = itemsToAdd.map(item => ({
+          ...item,
+          images: uploadedImages.length > 0 ? uploadedImages : (item.images || (item.image ? [item.image] : [])),
+          votes: item.votes || 0
+        }));
+
+        const { error } = await supabase.from('homestays').insert(newItems);
+        
+        if (!error) {
+          fetchHomestays();
+          resetForm();
+          setStatus("✅ Đã thêm " + newItems.length + " homestay thành công!");
+          setTimeout(() => setStatus(""), 3000);
+        } else {
+          setStatus("❌ Lỗi Supabase: " + error.message);
+        }
       }
     } catch (e) {
       setStatus("❌ Lỗi format JSON. Hãy kiểm tra lại!");
     }
   };
+
+  const resetForm = () => {
+    setJsonInput("");
+    setInputText("");
+    setUploadedImages([]);
+    setEditingId(null);
+  };
+
+  const handleEdit = (home) => {
+    setEditingId(home.id);
+    const { id, created_at, votes, comments, ...rest } = home;
+    setJsonInput(JSON.stringify(rest, null, 2));
+    setUploadedImages(home.images || (home.image ? [home.image] : []));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
 
   const deleteHomestay = async (id) => {
     const { error } = await supabase.from('homestays').delete().eq('id', id);
@@ -63,8 +100,9 @@ export default function Admin() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
         {/* Left Column: Import */}
-        <div className="glass" style={{ padding: '30px' }}>
-          <h2 style={{ marginBottom: '20px' }}>Nhập dữ liệu AI</h2>
+        <div className="glass" style={{ padding: '30px', position: 'sticky', top: '100px', height: 'fit-content' }}>
+          <h2 style={{ marginBottom: '20px' }}>{editingId ? "🔧 Chỉnh sửa Homestay" : "Nhập dữ liệu AI"}</h2>
+
           <p style={{ fontSize: '0.9rem', marginBottom: '15px', color: 'var(--text-muted)' }}>
             Dán thông tin mô tả homestay vào đây, sau đó copy prompt để nhờ AI gen ra JSON.
           </p>
@@ -176,21 +214,39 @@ export default function Admin() {
             }}
           />
           
-          <button 
-            onClick={handleAddFromJson}
-            style={{ 
-              width: '100%',
-              background: 'var(--primary)', 
-              color: 'white', 
-              border: 'none', 
-              padding: '15px', 
-              borderRadius: '12px',
-              fontWeight: '700',
-              fontSize: '1rem'
-            }}
-          >
-            Nhập Homestay Ngay
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              onClick={handleAddFromJson}
+              style={{ 
+                flex: 1,
+                background: editingId ? 'var(--primary-light)' : 'var(--primary)', 
+                color: 'white', 
+                border: 'none', 
+                padding: '15px', 
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '1rem'
+              }}
+            >
+              {editingId ? "Lưu thay đổi" : "Nhập Homestay Ngay"}
+            </button>
+            {editingId && (
+              <button 
+                onClick={resetForm}
+                style={{ 
+                  background: '#f5f5f5', 
+                  color: '#666', 
+                  border: 'none', 
+                  padding: '0 20px', 
+                  borderRadius: '12px',
+                  fontWeight: '600'
+                }}
+              >
+                Hủy
+              </button>
+            )}
+          </div>
+
           
           {status && <div style={{ marginTop: '15px', textAlign: 'center', fontWeight: '600' }}>{status}</div>}
         </div>
@@ -218,12 +274,21 @@ export default function Admin() {
                     </div>
                   )}
                 </div>
-                <button 
-                  onClick={() => deleteHomestay(home.id)}
-                  style={{ background: '#fee2e2', color: '#991b1b', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem' }}
-                >
-                  Xóa
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <button 
+                    onClick={() => handleEdit(home)}
+                    style={{ background: 'var(--bg-mint)', color: 'var(--primary)', border: '1px solid var(--primary-soft)', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem', fontWeight: '600' }}
+                  >
+                    Sửa JSON
+                  </button>
+                  <button 
+                    onClick={() => deleteHomestay(home.id)}
+                    style={{ background: '#fee2e2', color: '#991b1b', border: 'none', padding: '8px 12px', borderRadius: '8px', fontSize: '0.8rem' }}
+                  >
+                    Xóa
+                  </button>
+                </div>
+
               </div>
             ))}
             {homestays.length === 0 && <p style={{ color: 'var(--text-muted)' }}>Chưa có homestay nào.</p>}
