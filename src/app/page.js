@@ -22,6 +22,8 @@ export default function Home() {
   const [selectedHome, setSelectedHome] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(5000000); // Default 5tr
+
 
   useEffect(() => {
     fetchHomestays();
@@ -102,8 +104,37 @@ export default function Home() {
       <main className="container animate-fade" style={{ paddingTop: '40px' }}>
         <header style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>Homestay Ưng Ý</h1>
-          <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>Bình chọn cho địa điểm bạn muốn chúng ta sẽ cùng đi nhất! 🍃</p>
+          <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', marginBottom: '30px' }}>Bình chọn cho địa điểm bạn muốn chúng ta sẽ cùng đi nhất! 🍃</p>
+          
+          <div className="glass" style={{ 
+            maxWidth: '500px', 
+            margin: '0 auto', 
+            padding: '20px', 
+            borderRadius: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '600' }}>
+              <span>Ngân sách tối đa:</span>
+              <span style={{ color: 'var(--primary-light)' }}>{maxPrice.toLocaleString()}đ / đêm</span>
+            </div>
+            <input 
+              type="range" 
+              min="200000" 
+              max="5000000" 
+              step="100000"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(parseInt(e.target.value))}
+              style={{ width: '100%', accentColor: 'var(--primary)' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <span>200k</span>
+              <span>5tr</span>
+            </div>
+          </div>
         </header>
+
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '50px' }}>
@@ -127,7 +158,8 @@ export default function Home() {
           gap: '30px',
           paddingBottom: '60px'
         }}>
-          {homestays.map((home) => {
+          {homestays.filter(h => h.price <= maxPrice).map((home) => {
+
             const mainImage = (home.images && home.images.length > 0) ? home.images[0] : "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&q=80&w=800";
             return (
               <div key={home.id} className="glass card-hover" style={{ 
