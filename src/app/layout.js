@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
         </nav>
         {children}
         <footer style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-          <p>© 2024 Homestay Voter. Made with 💚 for travelers.</p>
+          <p>© 2026 Homestay Voter. Nguyễn Nhật Trường. Made with 💚 for người dễ thương.</p>
         </footer>
       </body>
     </html>

@@ -101,7 +101,7 @@ export default function Home() {
     <>
       <main className="container animate-fade" style={{ paddingTop: '40px' }}>
         <header style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>Tìm Kiếm Homestay Ưng Ý</h1>
+          <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>Homestay Ưng Ý</h1>
           <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>Bình chọn cho địa điểm bạn muốn chúng ta sẽ cùng đi nhất! 🍃</p>
         </header>
 
